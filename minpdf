@@ -6,7 +6,7 @@ out=$2
 RANDOM=$(date +%s%N | cut -b10-19)
 
 if [[ -z $in ]]; then
-    echo "Usage: $0 FILE [-o FILE]"
+    echo "Usage: $0 INFILE [OUTFILE]"
     exit 1
 fi
 
@@ -24,7 +24,7 @@ answered() { case $REPLY in
 check_write() {
     local file=$1
     write=0
-    if [[ -a $out ]]; then
+    if [[ -a $file ]]; then
         REPLY=
         until [[ $(answered) -eq 1 ]]; do
             read -n1 -p  "File $file already exists. Overwrite? (yn) "
@@ -34,6 +34,8 @@ check_write() {
             y | Y) write=1;;
             *) write=0;;
         esac
+    else
+        write=1
     fi
 }
 

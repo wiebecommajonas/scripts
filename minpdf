@@ -1,0 +1,62 @@
+#!/bin/bash
+
+in=$1
+out=$2
+
+RANDOM=$(date +%s%N | cut -b10-19)
+
+if [[ -z $in ]]; then
+    echo "Usage: $0 FILE [-o FILE]"
+    exit 1
+fi
+
+if [[ ! -a $in ]]; then
+    echo "File $in not found"
+    exit 1
+fi
+
+answered() { case $REPLY in
+        y | Y | n | N) echo 1;;
+        *) echo 0;;
+    esac
+}
+
+check_write() {
+    local file=$1
+    write=0
+    if [[ -a $out ]]; then
+        REPLY=
+        until [[ $(answered) -eq 1 ]]; do
+            read -n1 -p  "File $file already exists. Overwrite? (yn) "
+            echo
+        done
+        case $REPLY in
+            y | Y) write=1;;
+            *) write=0;;
+        esac
+    fi
+}
+
+ps_out="$RANDOM$RANDOM.ps"
+if [[ -z $out ]]; then
+    in_base="${in##*/}"
+    in_base="${in_base%%.*}"
+    out="$in_base.pdf"
+fi
+
+check_write $ps_out
+if [[ $write -eq 0 ]]; then
+    exit 1
+fi
+
+pdf2ps -dLanguageLevel=3 $in $ps_out
+
+check_write $out
+if [[ $write -eq 0 ]]; then
+    exit 1
+fi
+
+ps2pdf -dPDFSETTINGS=/ebook $ps_out $out
+rm $ps_out
+
+exit 0

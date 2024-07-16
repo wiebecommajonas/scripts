@@ -1,0 +1,17 @@
+#!/bin/bash
+
+sessions=`tmux ls | awk -F: '{print $1}'`
+
+if [ -z sessions ]; then
+    tmux new-session
+else
+    selected=`echo $sessions | tr ' ' '\n' | fzf`
+    if [[ $? -eq 130 ]]; then
+        echo No session selected
+    else
+        tmux attach -t $selected
+    fi
+fi
+
+
+
